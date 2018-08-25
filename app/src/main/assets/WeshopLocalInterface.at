@@ -1,0 +1,75 @@
+ //import /.WeShop.ShoppingList;
+  object:{
+      def WeshopLocalInterface := object:{
+          def parent;
+
+          def init(p){
+              parent := p;
+
+           };
+           //methods called by Java
+
+          def setName(userName){ // Where to get username ---Android?
+          	portalParent.userName := userName;
+          };
+          def setID(id){
+              //system.println("in SETID. " + id);
+              system.print("please print THIS. ");
+          	  parent.myID := id;
+          };
+          def stop(){
+          	 network.offline();
+          };
+          def createShoppingList(listID, title){
+              //def shoppingList := ShoppingList.new(listID,title);
+              //parent.shoppingLists.add(shoppingList);
+              parent.nearbyShoppers <- addShoppingList(listID, title);
+          };
+
+          def joinShoppingList(listID){
+                    //getShoppingList(listID).follow(self.username);
+                   parent.nearbyShoppers <- addListFollower(parent, listID);
+
+
+          };
+//uncomment for tests
+
+     //     def containsShoppingList(listID){
+//          	  def listIndex := nil;
+//          	  def i := 0;
+//          	  while: {i < parent.shoppingLists.size()} do: {
+//          	        if:(listID == parent.shoppingLists.elementAt(i).id) then: {
+//          	            listIndex := i;
+//          	        };
+//          	        i := i+1;
+//
+//          	  };
+//          	  listIndex;
+//          };
+          //uncomment for the tests
+        //  def getShoppingList(listID){
+//              def index := containsShoppingList(listID);
+//              if: (index == nil) then:{
+//              nil;
+//              } else:{
+//              parent.shoppingLists.get(index);
+//              }
+//          };
+
+          def addItemToShoppingList(listID, item, amount) {
+                parent.nearbyShoppers <- addItemToShoppingList(listID, item, amount);
+              //getShoppingList(listID).addItem(item,amount);
+
+          };
+          def freezeShoppingList (listID) {
+            //getShoppingList(listID).freezeList();
+            parent.nearbyShoppers <- freezeShoppingList(listID);
+          };
+
+          def notify(@texts) {
+              	system.println(@texts);
+          };
+
+
+       };
+   };

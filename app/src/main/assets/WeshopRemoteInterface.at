@@ -1,0 +1,66 @@
+object:{
+	def WeshopRemoteInterface := object: {
+	           deftype ArrayIndexOutOfBoundsException <: /.at.lang.types.Exception;
+	           def parent;
+	           def userName;
+	           def init (parent){
+	                self.parent := parent;
+	                };
+
+	           def getName(){
+               			parent.userName;
+               };
+               def getID(){
+               			parent.myID;
+               };
+
+               def addShoppingList(id ,title){
+                    parent.gui.addShoppingList(id,title);
+                   // parent.shoppingLists.add(shoppingList); //the test takes an isolate of type Shoppinglist
+               };
+
+               def addListFollower(follower, listID){
+                     parent.gui.addListFollower(follower,listID);
+                   // getShoppingList(listID).follow(parent); // for the test
+               };
+
+               def addItemToShoppingList(listID, item, amount){
+                     parent.gui.addItemToShoppingList(listId,item, amount);
+
+                   //getShoppingList(listID).addItem(item,amount);
+               };
+
+               def freezeShoppingList(listID){
+                    parent.gui.freezeShoppingList(listId);
+                   // getShoppingList(listID).freezeList();
+               };
+               def memberDied(member){
+                    parent.gui.memberDied(member);
+               };
+               def memberResurrected(member){
+                    parent.gui.memberResurrected(member);
+               };
+
+               //uncomment the following methods for testing
+             //  def containsShoppingList(listID){
+//                   def listIndex := nil;
+//                   def i := 0;
+//                   while: {i < parent.shoppingLists.size()} do: {
+//                       if:(listID == parent.shoppingLists.elementAt(i).id) then: {
+//                         	  listIndex := i;
+//                       };
+//                       i := i+1;
+//
+//                   };
+//                   listIndex;
+//               };
+//
+//               def getShoppingList(listID){
+//                    try:{ def index := containsShoppingList(listID);
+//                     parent.shoppingLists.get(index);} catch: ArrayIndexOutOfBoundsException using:{|e|
+//                     nil;
+//                     };
+//               };
+    };
+};
+

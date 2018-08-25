@@ -1,0 +1,233 @@
+import /.WeShop.OmniRefService;
+
+def weShopModule := object: {
+    def multifuturesModule := /.at.lang.multifutures;
+	def weShopTest() {
+		extend: /.at.unit.test.UnitTest.new("WeShop test", false) with: {
+			import /.at.support.timer;
+			import /.at.lang.futures exclude seconds, millisec, minutes;
+			enableFutures();
+            deftype Weshopper;
+
+			//helper function to create a player in an actor.
+            def otherPeerHost;
+             def makeShopper(userName){
+			    actor: {
+			           deftype IndexOutOfBounds <: /.at.lang.types.Exception;
+			           import /.WeShop.OmniRefService;
+			           deftype Weshopper;
+			           def nearbyShoppers := omnireference:  Weshopper;
+			           import /.WeShop.WeshopRemoteInterface;
+			           import /.WeShop.WeshopLocalInterface;
+			           import /.at.lang.futures;
+                       def Vector := jlobby.java.util.Vector;
+                       def shoppingLists := Vector.new();
+
+
+        			  enableFutures(false);
+        			  def remoteInterface := WeshopRemoteInterface.new(self,userName);
+        			  def localInterface := WeshopLocalInterface.new(self,userName);
+        			  def getShoppingListsSize(){
+        			      self.shoppingLists.size();
+        			  };
+        			  def getShoppingListID(shoppingListsIndex){
+                            shoppingLists.elementAt(shoppingListsIndex).id;
+        			  };
+        			  def createShoppingList(listID, title){
+        			      localInterface.createShoppingList(listID, title);
+
+        			  };
+        			  def getShoppingListItemAmount(listID, itemName){
+                          localInterface.getShoppingList(listID).shoppingListAmount(itemName);
+                      };
+
+                      def addItemToShoppingList(listID, itemName, itemAmount){
+                          localInterface.addItemToShoppingList(listID, itemName, itemAmount);
+                      };
+                      def freezeShoppingList(listID){
+                          localInterface.freezeShoppingList(listID);
+                      };
+                      def containsShoppingList(listID){
+                        if: ( localInterface.getShoppingList(listID) == nil) then:
+                        {false;}else:{
+                        listID ==  localInterface.getShoppingList(listID).id;};
+                      };
+                       def frozenList(listID){
+                           1 ==  localInterface.getShoppingList(listID).frozen;
+                       };
+
+        			  def pub := export: remoteInterface as: Weshopper;
+        		      def goOffline() {
+                      	disconnect: remoteInterface;
+                      	pub.cancel();
+                      };
+                      def goOnline() {
+                        pub := export: remoteInterface as: Weshopper;
+                      };
+
+
+        	    };
+             };
+            def aShopper;
+        	def anotherShopper;
+
+
+
+			/******* UNIT TESTS *******/
+			def testOmnirefRegistersShoppers(){
+			    import /.WeShop.ShoppingList;
+			    aShopper := makeShopper("A");
+                anotherShopper := makeShopper("B");
+                def nearbyShoppers := omnireference:  Weshopper;
+            	def [fut,res] := makeFuture();
+            	when: 3.seconds elapsed:{
+                					res.resolve(multifuturesModule.whenAll: nearbyShoppers<-addShoppingList(ShoppingList.new(1,"title 1"))@FutureMessage resolved: { |vals|
+                					 	system.println("vals1 "+ vals);
+                					 	self.assertTrue(vals.contains("A"));
+                					 	self.assertTrue(vals.contains("B"));
+                					});
+                				};
+                      			fut;
+            };//end-testAsyncMessagesWithReturnValue
+            def testOnReconnection(){
+                 import /.WeShop.ShoppingList;
+                 aShopper := makeShopper("A");
+                 anotherShopper := makeShopper("B");
+                 def nearbyShoppers := omnireference:  Weshopper;
+                 def [fut,res] := makeFuture();
+
+            		when: 3.seconds elapsed:{
+                       nearbyShoppers<-addShoppingList(ShoppingList.new(5,"title 3"))@FutureMessage;
+                       when: anotherShopper<-goOffline()@FutureMessage becomes:{ |result1|
+            			 when: nearbyShoppers <- addShoppingList(ShoppingList.new(4,"title 4"))@FutureMessage  becomes: { |result2|
+            				  whenMemberOf: nearbyShoppers reconnected:{ |member|
+            						   res.resolve(multifuturesModule.whenAll: (group:[anotherShopper<-getShoppingListID(0)@FutureMessage,
+                                                                        		       anotherShopper<-getShoppingListsSize(3)@FutureMessage
+                                                                        	      ])
+                                                             resolved: { |vals|
+                                                                        system.println( "vals2" + vals);
+                                       });
+            				  };
+            				  anotherShopper <- goOnline();
+
+            			 };
+            		   };
+            	    };
+            	fut;
+
+            };
+
+            def testOnDisconnection() {
+                 import /.WeShop.ShoppingList;
+                 aShopper := makeShopper("A");
+                 anotherShopper := makeShopper("B");
+                 def nearbyShoppers := omnireference:  Weshopper;
+                 def [fut,res] := makeFuture();
+                 def [fut2,res2] := makeFuture();
+
+            	when: 3.seconds elapsed:{
+            					aShopper<-createShoppingList(2, "title 2")@FutureMessage;
+            					when: aShopper<-getShoppingListID(0)@FutureMessage becomes: { |loc|
+            						whenMemberOf: nearbyShoppers disconnected:{ |member|
+            						    nearbyShoppers<-addShoppingList(ShoppingList.new(3,"title 3"))@FutureMessage;
+
+            						    res.resolve(multifuturesModule.whenAll: (group:[aShopper<-getShoppingListID(0)@FutureMessage,
+            						                                                    aShopper<-containsShoppingList(3)@FutureMessage,
+            						                                                    anotherShopper<-getShoppingListID(0)@FutureMessage,
+            						                                                     anotherShopper<-containsShoppingList(3)@FutureMessage
+            						                                                     ])
+            						       resolved: { |vals|
+            						    	system.println( "vals" + vals);
+            						    	def loc1 := vals[1][1];
+            						    	def loc2 := vals[1][2];
+            						    	def loc3 := vals[1][3];
+            						    	def loc4 := vals[1][4];
+
+            						    	self.assertEquals(2,loc1);
+            						    	self.assertEquals(true,loc2);
+            						    	self.assertEquals(2,loc3);
+            						    	self.assertEquals(false,loc4);
+
+
+            							}); //end of resolve
+            						};
+            						anotherShopper<-goOffline();
+            					};
+            	};
+
+              fut;
+            };//end-testAsyncMessagesAreNotSentTwice
+
+
+            def testUsersAddTheSameProduct() {
+                import /.WeShop.ShoppingList;
+                aShopper := makeShopper("A");
+                anotherShopper := makeShopper("B");
+                def nearbyShoppers := omnireference:  Weshopper;
+                def [fut,res] := makeFuture();
+                def [fut2,res2] := makeFuture();
+
+                 when: 3.seconds elapsed:{
+                        nearbyShoppers<-addShoppingList(ShoppingList.new(6,"title 6 "))@FutureMessage;
+                        	when: aShopper<-addItemToShoppingList(6, "cake", 2)@FutureMessage becomes: { |result1|
+                        	        when: anotherShopper<-addItemToShoppingList(6, "cake", 8)@FutureMessage becomes: { |result2|
+
+
+                        						    res.resolve(multifuturesModule.whenAll: (group:[aShopper<-getShoppingListItemAmount(6, "cake")@FutureMessage,
+                        						                                                    anotherShopper<-getShoppingListItemAmount(6, "cake")@FutureMessage
+                        						                                                     ])
+                        						       resolved: { |vals|
+                        						    	system.println( "vals 3" + vals);
+                        						    	def loc1 := vals[1][1];
+                        						    	def loc2 := vals[1][2];
+
+
+                        						    	self.assertEquals(loc1,loc2);
+                        						    	self.assertEquals(10,loc1);
+                        						    	self.assertEquals(10,loc2);
+
+
+
+                        							}); //end of resolve
+                        			};
+
+                        	};
+                 };
+                fut;
+            };//end of testUsersAddTheSameProduct
+
+            def  testOtherUsersCannotAddItemsOnFreeze() {
+                 import /.WeShop.ShoppingList;
+                 aShopper := makeShopper("A");
+                 anotherShopper := makeShopper("B");
+                 def nearbyShoppers := omnireference:  Weshopper;
+                 def [fut,res] := makeFuture();
+                 def [fut2,res2] := makeFuture();
+
+                 when: 3.seconds elapsed:{
+                         nearbyShoppers<-addShoppingList(ShoppingList.new(7,"title 7 "))@FutureMessage;
+
+                         when: aShopper<-freezeShoppingList(7)@FutureMessage becomes: { |result1|
+                                res.resolve(multifuturesModule.whenAll: (group:[aShopper<-addItemToShoppingList(7, "doughnut", 2)@FutureMessage,
+                                                                                aShopper<-addItemToShoppingList(7, "doughnut", 2)@FutureMessage
+                                                                                ])
+                                    						   resolved: { |vals|
+                                    						    	system.println( "vals 4" + vals);
+                                    						    	def loc1 := vals[1][1];
+                                    						    	def loc2 := vals[1][2];
+
+                                    						    	self.assertEquals("Frozen List",loc1);
+                                    						    	self.assertEquals("Frozen List",loc2);
+
+                                    							}); //end of resolve
+
+                         };
+                  };
+               fut;
+            };//end of testOtherUsersCannotAddItemsOnFreeze
+
+
+        };// end of test extend
+	 }; //end-weShopTest
+};
+def run() { weShopModule.weShopTest.runTest() };

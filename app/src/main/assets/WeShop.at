@@ -1,0 +1,57 @@
+import /.WeshopLocalInterface;
+import /.WeshopRemoteInterface;
+import /.OmniRefService;
+//import /.WeShop.ShoppingList;
+import /.at.lang.futures;
+
+
+
+def makeWeShop(){
+
+    object:{
+
+      deftype Weshopper;
+      def userName; //to be given through gui
+      def myID; //to be given through gui
+      def nearbyShoppers := omnireference: Weshopper;
+      def Vector := jlobby.java.util.Vector;
+      def ShoppingLists := Vector.new();//the local user's created shopping lists.
+      def joinedShoppingLists := Vector.new();//shopping lists created by other users that user has joined .
+      def allShoppingLists := Vector.new();//All shopping lists discovered in the network.
+
+
+      def notification(@texts) {
+      // send notification to the network
+    	system.println("[musicPlayer "+userName+"] ", @texts);
+      };
+      //Reference to the main activity which implements the JWeShop interface
+      def gui;
+
+       //Remote interface which serves as an external interface to other WeShoppers
+      def remoteInterface := WeshopRemoteInterface.new(self);
+
+       //Local interface, used by Android to signal GUI events to the AmbientTalk part of the application. Should implement the ATWeShop interface
+      def localInterface := WeshopLocalInterface.new(self);
+       //Go online and export remote interface to be discovered by remote users
+      def goOnline() {
+
+ 	         export: remoteInterface as: Weshopper;
+
+ 	         whenMemberOf: nearbyShoppers disconnected:{ |member|
+ 	            nearbyShoppers<-memberDied(member);
+ 	         };
+ 	         whenMemberOf: nearbyShoppers reconnected:{ |member|
+                nearbyShoppers<-memberResurrected(member);
+             };
+
+      };
+       //Provide the Android part of the application with a reference to the AmbientTalk part (i.e. the handshake)
+       gui := Android.parent.registerATApp(localInterface);
+       goOnline();
+
+    };
+};
+
+Android.Log.v("gakuo","AmbientTalk  :) Started");
+network.online();
+self;

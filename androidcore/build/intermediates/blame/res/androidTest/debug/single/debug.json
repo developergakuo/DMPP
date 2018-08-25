@@ -1,0 +1,30 @@
+[
+    {
+        "merged": "C:\\Users\\gakuo\\Downloads\\The-project\\Project\\WeShop\\androidcore\\build\\intermediates\\res\\merged\\androidTest\\debug\\raw_atlib.zip.flat",
+        "source": "C:\\Users\\gakuo\\Downloads\\The-project\\Project\\WeShop\\androidcore\\build\\intermediates\\bundles\\debug\\res\\raw\\atlib.zip"
+    },
+    {
+        "merged": "C:\\Users\\gakuo\\Downloads\\The-project\\Project\\WeShop\\androidcore\\build\\intermediates\\res\\merged\\androidTest\\debug\\layout_installer.xml.flat",
+        "source": "C:\\Users\\gakuo\\Downloads\\The-project\\Project\\WeShop\\androidcore\\build\\intermediates\\bundles\\debug\\res\\layout\\installer.xml"
+    },
+    {
+        "merged": "C:\\Users\\gakuo\\Downloads\\The-project\\Project\\WeShop\\androidcore\\build\\intermediates\\res\\merged\\androidTest\\debug\\drawable-mdpi-v4_ic_dialog_alert.png.flat",
+        "source": "C:\\Users\\gakuo\\Downloads\\The-project\\Project\\WeShop\\androidcore\\build\\intermediates\\bundles\\debug\\res\\drawable-mdpi-v4\\ic_dialog_alert.png"
+    },
+    {
+        "merged": "C:\\Users\\gakuo\\Downloads\\The-project\\Project\\WeShop\\androidcore\\build\\intermediates\\res\\merged\\androidTest\\debug\\drawable-hdpi-v4_ic_dialog_alert.png.flat",
+        "source": "C:\\Users\\gakuo\\Downloads\\The-project\\Project\\WeShop\\androidcore\\build\\intermediates\\bundles\\debug\\res\\drawable-hdpi-v4\\ic_dialog_alert.png"
+    },
+    {
+        "merged": "C:\\Users\\gakuo\\Downloads\\The-project\\Project\\WeShop\\androidcore\\build\\intermediates\\res\\merged\\androidTest\\debug\\drawable-hdpi-v4_at_icon.png.flat",
+        "source": "C:\\Users\\gakuo\\Downloads\\The-project\\Project\\WeShop\\androidcore\\build\\intermediates\\bundles\\debug\\res\\drawable-hdpi-v4\\at_icon.png"
+    },
+    {
+        "merged": "C:\\Users\\gakuo\\Downloads\\The-project\\Project\\WeShop\\androidcore\\build\\intermediates\\res\\merged\\androidTest\\debug\\drawable_at_logo_big.png.flat",
+        "source": "C:\\Users\\gakuo\\Downloads\\The-project\\Project\\WeShop\\androidcore\\build\\intermediates\\bundles\\debug\\res\\drawable\\at_logo_big.png"
+    },
+    {
+        "merged": "C:\\Users\\gakuo\\Downloads\\The-project\\Project\\WeShop\\androidcore\\build\\intermediates\\res\\merged\\androidTest\\debug\\drawable-mdpi-v4_at_icon.png.flat",
+        "source": "C:\\Users\\gakuo\\Downloads\\The-project\\Project\\WeShop\\androidcore\\build\\intermediates\\bundles\\debug\\res\\drawable-mdpi-v4\\at_icon.png"
+    }
+]

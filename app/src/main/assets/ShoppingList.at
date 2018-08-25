@@ -1,0 +1,79 @@
+object: {
+    def ShoppingList := isolate: {
+        def id := nil;
+        def title := nil;
+        def items := jlobby.java.util.Vector.new();
+        def followers := jlobby.java.util.Vector.new();
+        def frozen := 0;
+        def init(id,title) {
+            self.id := id;
+            self.title := title;
+        };
+        // override equality of lists to be based on their id
+        // rather than on their object identity
+        def equals(other) {
+            (self.id == other.id);
+        };
+        def Item := isolate: {
+            def name := nil;
+            def amount := nil;
+            def init(name, amount){
+                self.name := name;
+                self.amount := amount;
+            };
+            def ==(other) {
+                (self.name == other.name);
+            };
+
+        };
+        def notification(@texts) {
+            system.println(@texts);
+        };
+        def addItem(name, amount) {
+        //add item and notify followers
+             if: (self.frozen == 0)then:{
+                if: (self.containsItem(name) == nil)
+                then:{items.add(Item.new(name, amount));
+                //notify followers
+                 "added";}
+                else:{
+                    def index := self.containsItem(name);
+                    def existing_amount := items.elementAt(index).amount;
+                    def current_amount := existing_amount + amount;
+                    self.items.set(index,Item.new(name, current_amount));};
+                    //notify followers
+                    "added";
+
+             }
+             else:{
+               "Frozen List";};
+        };
+        def toString(item) {
+            item.name + " x " + item.amount + " added" ;
+        };
+        def containsItem(name){
+            def itemIndex := nil;
+            def i := 0;
+            while: {i < self.items.size()} do: {
+                if:(name == self.items.elementAt(i).name) then: {
+                    itemIndex := i;
+                };
+                i := i+1;
+
+            };
+           itemIndex;
+        };
+        def shoppingListAmount(itemName){
+            self.items.elementAt(self.containsItem(itemName)).amount;
+        };
+        def follow(username){
+            self.followers.add(username);
+        };
+
+        def freezeList(){
+            self.frozen := 1;
+            "List frozen";
+        };
+
+    };
+};

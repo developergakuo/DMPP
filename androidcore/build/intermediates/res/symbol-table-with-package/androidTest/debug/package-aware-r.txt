@@ -1,0 +1,6 @@
+edu.vub.at.android.util.test
+int drawable at_icon 0x7f010000
+int drawable at_logo_big 0x7f010001
+int drawable ic_dialog_alert 0x7f010002
+int layout installer 0x7f020000
+int raw atlib 0x7f030000

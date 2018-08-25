@@ -1,0 +1,106 @@
+def Exception := /.at.lang.types.Exception;
+//def XIllegalOperation := /.at.lang.exceptions.XIllegalOperation;
+def XIllegalOperation := /.at.lang.exceptions.XException;
+
+def vector := /.at.collections.vector.Vector;
+deftype Omnireference;
+def futuresModule := /.at.lang.futures;
+def multifuturesModule := /.at.lang.multifutures;
+object: {
+        def makeOmniRefMirror(){
+          mirror:{
+            def serviceType;
+            def receivers := []; //or vector.new(); // to store available receivers matching the service type
+            def discovered := false;
+            //added for section b)
+            def inbox := vector.new();
+            // forward all messages in the inbox to the given principal
+            def forwardInbox(toReceiver) {
+                inbox.each: { |msg| toReceiver <+ msg };
+            };
+
+            // override the necessary MOP methods
+
+            // forward messages to the receiver
+            def receive(message) {
+                //added for section c)
+                def [fut,res];
+                if: (is: message taggedAs: futuresModule.FutureMessage) then: {
+                    [fut,res] := multifuturesModule.makeMultiFuture(receivers.length);
+                    message := futuresModule.futurize(message, fut);
+                };
+                // added for section b)
+                inbox.add(message);
+                receivers.each:{ |farRef|
+                    farRef <+ message;
+                };
+                //return value of a message send to a multi reference is:
+                // nil if the message is not annotated
+                // the multifuture if the message is annotated with FutureMessage.
+                fut;
+            };
+
+            // disallow synchronous access to the remote object
+            def invoke(slf, inv) {
+                // the only legal operation on references is '=='
+                if: (`(==) == inv.selector) then: {
+                    // two ominrefs are equal iff their mirrors are equal
+                    self == (reflect: (inv.arguments)[1])
+                } else: {
+                    raise: XIllegalOperation.new("Cannot synchronously invoke " + inv.selector + " on " + self.toString());
+                }
+            };
+
+            def invokeField(slf, sel) { self.invoke(slf, `(.#sel())) };
+
+            def toString() {
+                "omnireference "+serviceType+": "+self;
+            };
+
+            //Added for section d)
+            def observeDisconnection(closure) {
+                receivers.each: { |receiver|
+                    when: receiver disconnected: {
+                    closure<-apply([receiver]) }
+                }
+            };
+
+            //Added for section d)
+            def observeReconnection(closure) {
+                receivers.each: { |receiver|
+                    when: receiver reconnected: { closure<-apply([receiver]) }
+                }
+            };
+
+            def init(base, serviceType) {
+                super^init(base);
+                self.serviceType := serviceType;
+                 // register service discovery of receivers
+                 whenever: serviceType discovered: { |potentialReceiver|
+                     //do not add the same receiver multiple times.
+                     if: (!receivers.contains(potentialReceiver)) then: {
+                         receivers := receivers + [potentialReceiver];
+                         // or receivers.add(potentialReceiver) if vector is used;
+                         // added for section b)
+                         forwardInbox(potentialReceiver);
+                     };
+                 };
+             };
+           };
+        };
+     	//creates an omnireference for a certain service type
+     	def omnireference: serviceType {
+     		object: { } taggedAs: [ Omnireference ] mirroredBy: {|base| makeOmniRefMirror.new(base, serviceType)};
+     	};
+
+     	//Added for section d)
+     	def whenMemberOf: omnireference disconnected: closure {
+     		(reflect: omnireference).observeDisconnection(closure);
+     	};
+
+     	//Added for section d)
+     	def whenMemberOf: omnireference reconnected: closure {
+     		(reflect: omnireference).observeReconnection(closure);
+    	};
+
+};
